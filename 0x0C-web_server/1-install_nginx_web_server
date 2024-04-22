@@ -1,35 +1,37 @@
 #!/usr/bin/env bash
-# Configures a new Ubuntu machine by installing
-# Nginx, which should listen on port 80 and serve
-# a page returning a Hello World string.
+# Bash script to install Nginx on a new Ubuntu machine and configure it to meet specific requirements.
 
-set -euo pipefail
+# Update package lists and install Nginx
+sudo apt-get update -y -qq && sudo apt-get install nginx -y
 
-echo "Updating and installing Nginx..."
-sudo apt-get update -y -qq
-sudo apt-get install nginx -y
+# Check if Nginx is installed
+if ! [ -x "$(command -v nginx)" ]; then
+  echo 'Error: Nginx installation failed.' >&2
+  exit 1
+fi
 
-echo "Setting up Nginx and firewall..."
-# Start Nginx service
-sudo systemctl start nginx
+# Configure Nginx to listen on port 80
+sudo sed -i 's/listen 80 default_server;/listen 80;/g' /etc/nginx/sites-available/default
 
-# Allow Nginx through the firewall
-sudo ufw allow 'Nginx HTTP'
+# Restart Nginx
+sudo service nginx restart
 
-echo "Configuring ownership and permissions..."
-# Give the current user ownership of website files for easy editing
-sudo chown -R "$USER":"$USER" /var/www/html
-sudo chmod -R 755 /var/www
+# Check if Nginx is running
+if ! sudo systemctl is-active --quiet nginx; then
+  echo 'Error: Nginx failed to start.' >&2
+  exit 1
+fi
 
-echo "Setting up initial page..."
-# Backup default index
-sudo mv /var/www/html/index.nginx-debian.html /var/www/html/index.nginx-debian.html.bckp || true
+# Create a simple "Hello World" page
+echo "Hello World!" | sudo tee /var/www/html/index.html > /dev/null
 
-# Create new index
-echo "Hello World!" | sudo tee /var/www/html/index.nginx-debian.html > /dev/null
+# Test if the "Hello World" page is served correctly
+curl -s localhost | grep -q "Hello World!"
+if [ $? -eq 0 ]; then
+  echo "Nginx is configured successfully. Hello World page is served."
+else
+  echo "Error: Failed to verify Nginx configuration." >&2
+  exit 1
+fi
 
-echo "Restarting Nginx..."
-sudo systemctl restart nginx
-
-echo "Setup completed successfully! ✅"
-
+echo "Setup completed successfully."
