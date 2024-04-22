@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Configures a new Ubuntu machine by installing
+# Nginx, which should listen on port 80 and serve
+# a page returning a Hello World string.
+
+set -euo pipefail
+
+echo "Updating and installing Nginx..."
+sudo apt-get update -y -qq
+sudo apt-get install nginx -y
+
+echo "Setting up Nginx and firewall..."
+# Start Nginx service
+sudo systemctl start nginx
+
+# Allow Nginx through the firewall
+sudo ufw allow 'Nginx HTTP'
+
+echo "Configuring ownership and permissions..."
+# Give the current user ownership of website files for easy editing
+sudo chown -R "$USER":"$USER" /var/www/html
+sudo chmod -R 755 /var/www
+
+echo "Setting up initial page..."
+# Backup default index
+sudo mv /var/www/html/index.nginx-debian.html /var/www/html/index.nginx-debian.html.bckp || true
+
+# Create new index
+echo "Hello World!" | sudo tee /var/www/html/index.nginx-debian.html > /dev/null
+
+echo "Restarting Nginx..."
+sudo systemctl restart nginx
+
+echo "Setup completed successfully! ✅"
+
