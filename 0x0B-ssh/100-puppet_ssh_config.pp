@@ -1,13 +1,12 @@
-#!/usr/bin/env bash
-# Make changes to the configuration file
+# Configure SSH client to use private key ~/.ssh/school
+include stdlib
 
-file {' ect/ssh/ssh_config':
-	ensure => present,
-content =>"
-	#SSH client configuration
-	host*
-	IdentityFile ~/.ssh/school
-	PasswordAuthentification no
-	",
+file_line { 'Use private key':
+  path => '/etc/ssh/ssh_config',
+  line => 'IdentityFile ~/.ssh/school',
+}
 
+file_line { 'Refuse password':
+  path => '/etc/ssh/ssh_config',
+  line => 'PasswordAuthentication no',
 }
