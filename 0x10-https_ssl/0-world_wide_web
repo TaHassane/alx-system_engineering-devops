@@ -1,25 +1,22 @@
 #!/usr/bin/env bash
 #Display information about subdomains
-if [ "$#" == 1 ]; then
-    printf "The subdomain www is a "
-    dig +nocmd www."$1" +noall +answer | awk '{printf $4}'
-    printf " record and points to "
-    dig www."$1" +short
-    printf "The subdomain lb-01 is a "
-    dig +nocmd lb-01."$1" +noall +answer | awk '{printf $4}'
-    printf " record and points to "
-    dig lb-01."$1" +short
-    printf "The subdomain web-01 is a "
-    dig +nocmd web-01."$1" +noall +answer | awk '{printf $4}'
-    printf " record and points to "
-    dig web-01."$1" +short
-    printf "The subdomain web-02 is a "
-    dig +nocmd web-02."$1" +noall +answer | awk '{printf $4}'
-    printf " record and points to "
-    dig web-02."$1" +short
-elif [ "$#" == 2 ]; then
-    printf "The subdomain %s is a " "$2"
-    dig +nocmd "$2.$1" +noall +answer | awk '{printf $4}'
-    printf " record and points to "
-    dig "$2.$1" +short
+
+display_info(){
+	local domain=$1
+	local subdomain=$2
+	echo "$(dig $2.$1 | grep -A1 'ANSWER SECTION:' | tail -1 | awk '{split($1, parts, ".");print "The subdomain " parts[1] " is a " $4 " record and points to " $5}')"
+}
+
+# Main script
+domain=$1
+subdomain=$2
+
+if [ "$#" -eq 1 ]; then
+    # Display information for default subdomains
+    for sub in www lb-01 web-01 web-02; do
+        display_info $domain $sub
+    done
+elif [ "$#" -eq 2 ]; then
+    # Display information for specified subdomain
+    display_info $domain $subdomain
 fi
