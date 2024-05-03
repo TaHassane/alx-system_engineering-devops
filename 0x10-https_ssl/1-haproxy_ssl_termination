@@ -37,14 +37,14 @@ frontend spartaha-frontend
         mode http
         http-request redirect scheme https code 301 unless { ssl_fc }
         http-request set-header X_Forwarded-Proto http
-        default_backend clickviral-backend
+        default_backend spartaha-backend
 
 frontend clickviral-frontend-https
         bind *:443 ssl crt /etc/haproxy/certs/www.spartaha.tech.pem
         http-request set-header X-Forwarded-Proto https
-        default_backend clickviral-backend
+        default_backend spartaha-backend
 
 backend spartaha-backend
         balance roundrobin
-        server 151666-web-01 54.237.5.225:80 check
-        server 151666-web-02 100.27.13.99:80 check
+        server 531128-web-01 54.237.5.225:80 check
+        server 531128-web-02 100.27.13.99:80 check
